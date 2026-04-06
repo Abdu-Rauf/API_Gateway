@@ -1,0 +1,30 @@
+// ...existing code...
+node_modules/
+.env
+jwt.txt
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor directories and files
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Testing/Coverage
+coverage/
+
+# Build outputs
+dist/
+build/
