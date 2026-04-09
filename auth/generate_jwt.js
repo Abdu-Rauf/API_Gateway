@@ -6,7 +6,7 @@ const SECRET_KEY = 'my_super_secret_benchmark_key';
 const POOL_SIZE = 200;
 
 function generateJWT(uID) {
-
+    // Converting String to binary ---required to convert it into base64url
     const header = Buffer.from(JSON.stringify({alg:"HS256",typ:"jwt"})).toString('base64url');
     const payload = Buffer.from(JSON.stringify({sub:uID})).toString('base64url');
     
