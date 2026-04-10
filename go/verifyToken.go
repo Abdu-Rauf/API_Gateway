@@ -4,10 +4,19 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
-	"log"
 	"os"
 	"strings"
 )
+
+var secretKey []byte
+
+func init() {
+	key := os.Getenv("SECRET_KEY")
+	if key == "" {
+		key = "my_super_secret_benchmark_key"
+	}
+	secretKey = []byte(key)
+}
 
 func VerifyToken(token string) bool {
 	if token == "" {
@@ -18,13 +27,9 @@ func VerifyToken(token string) bool {
 		return false
 	}
 	unsignedToken := strings.Join(temp[:2], ".")
-	log.Println(unsignedToken)
-
-	// Default secret key or pull from environment
-	secretKey := os.Getenv("SECRET_KEY")
 
 	// 1. Create HMAC SHA256 generator
-	mac := hmac.New(sha256.New, []byte(secretKey))
+	mac := hmac.New(sha256.New, secretKey)
 
 	// 2. Hash the unsigned token (equivalent to .update())
 	mac.Write([]byte(unsignedToken))
