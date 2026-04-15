@@ -3,6 +3,20 @@ const crypto = require('crypto');
 require('dotenv').config({ path: '../.env' });
 const express = require('express');
 
+// Create Redis Client
+const {createClient} = require('redis');
+const redisClient = createClient({
+    url : "redis://localhost:6379"
+})
+redisClient.on("error", (err) => {
+    console.log("Redis error", err);
+});
+
+// Load the Token Bucket Script
+const fs = require('fs');
+const luaScript = fs.readFileSync('../redis/token_bucket.lua', 'utf8');
+let luaScriptSHA = null;
+
 const app = express();
 
 const PORT = process.env.PORT || 3000;
