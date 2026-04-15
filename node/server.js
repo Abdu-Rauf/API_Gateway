@@ -31,8 +31,14 @@ redisClient.on("ready", async () => {
         luaScriptSHA = await redisClient.scriptLoad(luaScript);
         console.log("Lua script loaded with SHA:", luaScriptSHA);
 
+        // ONLY start the Express server after Redis is completely set up
+        app.listen(PORT,()=>{
+            console.log(`Server Running on port ${PORT}`)
+        });
+
     } catch (err) {
         console.error("Critical Error: Failed to load Lua script into Redis", err);
+        process.exit(1) // Kill the app if Lua script fails to load
     }
 });
 
