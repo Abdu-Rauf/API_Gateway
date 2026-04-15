@@ -1,12 +1,21 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
+	"os"
 	"strings"
+
+	"github.com/redis/go-redis/v9"
 )
 
-func jwtHandler(w http.ResponseWriter, r *http.Request) {
+type Gateway struct {
+	redisClient *redis.Client
+	rtlScript   *redis.Script
+}
+
+func (g *Gateway) jwtHandler(w http.ResponseWriter, r *http.Request) {
 	// Restrict to GET method like app.get("/")
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -25,12 +34,11 @@ func jwtHandler(w http.ResponseWriter, r *http.Request) {
 	token := strings.TrimPrefix(authHeader, "Bearer ")
 
 	// Verify The Token
-	decoded := VerifyToken(token)
-	if !decoded {
+	payload := VerifyToken(token)
+	if payload == "" {
 		http.Error(w, "Invalid Token Signature", http.StatusUnauthorized)
 		return
 	}
-
 	w.WriteHeader(http.StatusOK)
 	// w.Write([]byte("Token Verified."))
 }
