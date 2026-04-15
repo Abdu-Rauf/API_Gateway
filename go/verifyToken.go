@@ -18,13 +18,13 @@ func init() {
 	secretKey = []byte(key)
 }
 
-func VerifyToken(token string) bool {
+func VerifyToken(token string) string {
 	if token == "" {
-		return false
+		return ""
 	}
 	temp := strings.Split(token, ".")
 	if len(temp) != 3 {
-		return false
+		return ""
 	}
 	unsignedToken := strings.Join(temp[:2], ".")
 
@@ -39,6 +39,9 @@ func VerifyToken(token string) bool {
 	expectedSignature := base64.RawURLEncoding.EncodeToString(expectedMAC)
 
 	// 4. constant-time comparison (equivalent to timingSafeEqual)
-	return hmac.Equal([]byte(expectedSignature), []byte(temp[2]))
+	if hmac.Equal([]byte(expectedSignature), []byte(temp[2])) {
+		return temp[1]
+	}
+	return ""
 
 }
