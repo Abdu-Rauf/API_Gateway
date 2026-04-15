@@ -21,6 +21,21 @@ const app = express();
 
 const PORT = process.env.PORT || 3000;
 
+redisClient.connect();
+
+// Wait for Redis to be fully ready before loading the script AND starting the server
+redisClient.on("ready", async () => {
+    console.log("Redis client connected and ready");
+    
+    try {
+        luaScriptSHA = await redisClient.scriptLoad(luaScript);
+        console.log("Lua script loaded with SHA:", luaScriptSHA);
+
+    } catch (err) {
+        console.error("Critical Error: Failed to load Lua script into Redis", err);
+    }
+});
+
 
 app.get("/", async (req,res)=>{
     // Check Wether Header Contain Bearer Token
