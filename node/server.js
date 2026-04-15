@@ -18,7 +18,6 @@ const luaScript = fs.readFileSync('../redis/token_bucket.lua', 'utf8');
 let luaScriptSHA = null;
 
 const app = express();
-
 const PORT = process.env.PORT || 3000;
 
 redisClient.connect();
@@ -53,18 +52,34 @@ app.get("/", async (req,res)=>{
     const token = authHeader.split(" ")[1]
 
     // Verify The Token
-    const decoded = verifyToken(token)
-    if (!decoded){
+    const payload = verifyToken(token)
+    if (!payload){
         return res.status(401).send("Invalid Token Signature")
-    }else{
-        return res.status(200).send("Token Verified.")
     }
+    // Decode sub to get the UserID
+    const decodedPayload = JSON.parse(Buffer.from(payload, 'base64url'));    
+    const userID = decodedPayload.sub;
 
+    const redisKey = `limit:${userID}`
+    const currentTime = Math.floor(Date.now() / 1000).toString();
+    const capacity = "10"; 
+    const rps = "2";
+
+    try {
+        const result = await redisClient.evalSha(
+            luaScriptSHA,{
+                keys : [redisKey],
+                arguments: [capacity,rps,currentTime]
+            }
+        )
+        if (result == 1){
+            return res.status(200).send("Token verified and allowed")
+    }else{
+            return res.status(429).send("Rate limit exceeded")
+    }
+    }catch (err) {
+        console.log("Redis error");
+        return res.status(500).send("Internal Server Error")
+    }
+    
 });
-
-
-// Start the server
-app.listen(PORT,()=>{
-    console.log(`Server Running on port ${PORT}`)
-})
-
