@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"log"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -13,6 +16,10 @@ import (
 type Gateway struct {
 	redisClient *redis.Client
 	rtlScript   *redis.Script
+}
+
+type JWTpayload struct {
+	Sub string `json:"sub"`
 }
 
 func (g *Gateway) jwtHandler(w http.ResponseWriter, r *http.Request) {
@@ -39,6 +46,27 @@ func (g *Gateway) jwtHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid Token Signature", http.StatusUnauthorized)
 		return
 	}
+
+	// Decode the Base64URL encoded payload
+	decodedBytes, err := base64.RawURLEncoding.DecodeString(payload)
+	if err != nil {
+		http.Error(w, "Failed to decode token payload", http.StatusInternalServerError)
+		return
+	}
+	// Unmarshal the decoded JSON bytes
+	var decodedPayload JWTpayload
+	err = json.Unmarshal(decodedBytes, &decodedPayload)
+	if err != nil {
+		http.Error(w, "Failed to parse token payload", http.StatusInternalServerError)
+		return
+	}
+
+	userID := decodedPayload.Sub
+
+	redisKey := "limit:" + userID
+	currentTime := time.Now().Unix()
+	capacity := 20
+	rps := 10
 	w.WriteHeader(http.StatusOK)
 	// w.Write([]byte("Token Verified."))
 }
