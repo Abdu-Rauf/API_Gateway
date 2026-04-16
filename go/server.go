@@ -67,8 +67,22 @@ func (g *Gateway) jwtHandler(w http.ResponseWriter, r *http.Request) {
 	currentTime := time.Now().Unix()
 	capacity := 20
 	rps := 10
+
+	ctx := r.Context()
+	// Call Redis For Rate Limiting
+	result, err := g.rtlScript.Run(ctx, g.redisClient, []string{redisKey}, capacity, rps, currentTime).Result()
+	if err != nil {
+		http.Error(w, "Redis execution error", http.StatusInternalServerError)
+		return
+	}
+
+	// go-redis returns numeric values as int64.
+	if result.(int64) == 1 {
 	w.WriteHeader(http.StatusOK)
-	// w.Write([]byte("Token Verified."))
+		w.Write([]byte("Token Verified & Request Allowed"))
+	} else {
+		http.Error(w, "Rate Limit Exceeded", http.StatusTooManyRequests)
+	}
 }
 
 func main() {
