@@ -65,6 +65,7 @@ app.get("/", async (req,res)=>{
     const capacity = "10"; 
     const rps = "2";
 
+    // Call redis for Rate limiting
     try {
         const result = await redisClient.evalSha(
             luaScriptSHA,{
@@ -74,12 +75,12 @@ app.get("/", async (req,res)=>{
         )
         if (result == 1){
             return res.status(200).send("Token verified and allowed")
-    }else{
-            return res.status(429).send("Rate limit exceeded")
-    }
-    }catch (err) {
-        console.log("Redis error");
-        return res.status(500).send("Internal Server Error")
-    }
-    
+        }else{
+                return res.status(429).send("Rate limit exceeded")
+        }
+        }catch (err) {
+            console.log("Redis error");
+            return res.status(500).send("Internal Server Error")
+        }
+        
 });
