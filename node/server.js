@@ -62,10 +62,10 @@ app.get("/", async (req,res)=>{
 
     const redisKey = `limit:${userID}`
     const currentTime = Math.floor(Date.now() / 1000).toString();
-    const capacity = "10"; 
-    const rps = "2";
+    const capacity = "20"; 
+    const rps = "10";
 
-    // Call redis for Rate limiting
+    // Call Redis For Rate Limiting
     try {
         const result = await redisClient.evalSha(
             luaScriptSHA,{
