@@ -27,4 +27,6 @@ coverage/
 
 # Build outputs
 dist/
-build/
+venv/
+go/apigateway_go
+__pycache__/
