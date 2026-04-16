@@ -78,7 +78,7 @@ func (g *Gateway) jwtHandler(w http.ResponseWriter, r *http.Request) {
 
 	// go-redis returns numeric values as int64.
 	if result.(int64) == 1 {
-	w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("Token Verified & Request Allowed"))
 	} else {
 		http.Error(w, "Rate Limit Exceeded", http.StatusTooManyRequests)
